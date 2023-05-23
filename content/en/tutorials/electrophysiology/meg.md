@@ -1,3 +1,51 @@
+Add all of this  /fred/oz120/freesurfer/scripts/do_freesurfer_oz120.sh
+#!/bin/bash
+
+export FREESURFER_HOME=/dagg/public/neuro/freesurfer-linux-centos7_x86_64-7.1.1
+export SUBJECTS_DIR=/fred/oz120/freesurfer/subjects
+source $FREESURFER_HOME/SetUpFreeSurfer.sh
+
+cd /fred/oz120/freesurfer/scripts
+
+SUBJECT=$2
+
+echo $SUBJECT
+echo "$@" -qcache -3T
+
+echo
+echo XXXXXXXXXXXXXXXXXX
+echo Starting recon-all
+echo
+
+#recon-all "$@" -qcache -3T
+recon-all "$@" -qcache -3T
+
+echo
+echo Finished recon-all
+echo XXXXXXXXXXXXXXXXXX
+echo
+
+#----- Do alternative brain extractions, ANTS and HD-BET -------#
+
+module load apptainer/latest
+
+# Make a reoriented copy of the T1W image, required for HD-BET
+# Create a new subdirectory in the freesurfer folder to hold the output of both HD-BET and ANTS brain extraction
+
+BRAIN_EXT_DIR=$SUBJECTS_DIR/$SUBJECT/alt_brain_ext
+
+mkdir $BRAIN_EXT_DIR
+
+T1_orig_001=$SUBJECTS_DIR/$SUBJECT/mri/orig/001.mgz
+
+# Used in HD-BET
+mri_convert --in_type mgz --out_type nii $T1_orig_001 $BRAIN_EXT_DIR/001.nii.gz
+apptainer exec  --bind /fred,/dagg,/home /dagg/public/neuro/containers/fmriprep-1.5.4.simg fslreorient2std $BRAIN_EXT_DIR/001.nii.gz $BRAIN_EXT_DIR/T1w_reoriented.nii.gz
+
+# Do all the ANTS coregistration, and both alternate brain extractions using ANTS and HD-BET
+
+apptainer exec  --bind /fred,/dagg,/home --nv /dagg/public/neuro/cuda_ants_28_08_2020.sif /fred/oz120/freesurfer/scripts/MEGMRI_preproc.sh $SUBJECT
+(END)
 ---
 title: "Template for tutorial creation"
 linkTitle: "Workflow template"
