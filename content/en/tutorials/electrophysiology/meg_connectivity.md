@@ -3,9 +3,9 @@ This tutorial will produce circular connectivity plots
 Firstly, the Boundry Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
 To do this, run: XXX is the project number.
 ```
-python /dagg/public/neuro/fred/oz120/freesurfer/scripts/do_freesurfer_ozXXX.sh 
+python /dagg/public/neuro/freesurfer_MEG_scripts/do_all_freesurfer.py ozXXX 
 ```
-This script will run
+The contents of this script are below
 ```
 #!/bin/bash
 
@@ -57,26 +57,27 @@ apptainer exec  --bind /fred,/dagg,/home --nv /dagg/public/neuro/cuda_ants_28_08
 ---
 
 Currently on OzStar, this container is needed when running connectivity analysis. 
-#Currently on OzStar, this container is needed for coregistration and connectivity analysis. 
-#ml apptainer/latest
-#singularity shell --bind /fred,/dagg/public/neuro  /dagg/public/neuro/containers/mneextended_1.2.2_20221207.sif
-#source /opt/miniconda-4.7.12/etc/profile.d/conda.sh
-#conda activate mne-extended
+ml apptainer/latest
+singularity shell --bind /fred,/dagg/public/neuro  /dagg/public/neuro/containers/mneextended_1.2.2_20221207.sif
+source /opt/miniconda-4.7.12/etc/profile.d/conda.sh
+conda activate mne-extended
 
-#Auto_Reject needs to be installed (e.g., pip install -U autoreject)
-#mne_connectivity is a seperate package and requires installation (e.g., pip install mne_connectivity)
+Installations:
+Auto_Reject needs to be installed (e.g., pip install -U autoreject). Available here :https://autoreject.github.io/stable/index.html
+mne_connectivity is a seperate package and requires installation (e.g., pip install mne_connectivity). Available here: https://mne.tools/mne-connectivity/stable/index.html
 
+```
 import os.path as op
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats
 import sys
-sys.path = ['/home/bslade/pytmp'] + sys.path
+sys.path = ['/home/bslade/pytmp'] + sys.path #this paths to where the mne_connectivity is saved too
 import mne_connectivity
 
 import mne
-#from autoreject import AutoReject
+#from autoreject import AutoReject #if using autoreject to detemine rejection threshold uncomment this line and the next. 
 #from autoreject import get_rejection_threshold
 #reject = get_rejection_threshold(epochs)
 from mne.preprocessing import ICA
@@ -89,21 +90,9 @@ from mne.minimum_norm import make_inverse_operator, apply_inverse_epochs
 from mne.viz import circular_layout
 from mne_connectivity import spectral_connectivity_epochs
 from mne_connectivity.viz import plot_connectivity_circle
-
-#import sys
-#from path.lib mport Path
-#ozstar_project = 'XXX' XXX is the project number
-#meg_path = '/fred/%s/raw/meg/'%ozstar_project
-
-#file_list = list(Path(meg_path).rglob('*.fif'))
-#for count,path in enumerate(file_list):
-    #raw_fname = os.path.join(str(path.parent),path.name)
-    #raw = mne.io.read_raw_fif(raw_fname, preload = True, verbose = False)
-    #print(raw.info)
-    #print ('\n%d/%d %s\n'%(count+1,len(file_list),raw))
-
-
-#Import raw file
+```
+Import raw file
+```
 raw_fname = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg.fif'
 raw = mne.io.read_raw_fif(raw_fname, preload = True, verbose = False)
 raw.info['bads'] = ['MEG2131','MEG0143']
@@ -111,22 +100,25 @@ picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exc
 raw.load_data
 #Band pass filter from 1 - 40 Hz.
 raw.filter(1., 40., fir_design= 'firwin')
+#View the data to check the filter applied
 raw.plot(group_by='selection')
-
-#To generate the trans file co-registration is needed before importing the -trans.fif file
-#In the terminal:mne coreg --subjects=/fred/oz120/freesurfer/subjects --high-res-head
-
+```
+#To generate the transform file needed to perform co-registration the -trans.fif file needs to be loaded. 
+#to generate the -trans.fif files, in the terminal copy and paste: 
+```
+mne coreg --subjects=/fred/oz120/freesurfer/subjects --high-res-head
+```
 #Instructions on how to use the mne coreg are here: https://mne.tools/1.1/auto_tutorials/forward/20_source_alignment.html
-#import -trans.fif file. Needed for forward solution and src files. 
+#import -trans.fif file. The trans.fif file is nmeeded to produce the forward solution and source space file. 
+```
 trans = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-trans.fif'
-
-raw.info['bads'] = ['MEG2131','MEG0143']
 picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exclude='bads')
 raw.load_data
 raw.filter(1., 40., fir_design= 'firwin')
 raw.plot(group_by='selection')
-
-#ICA analysis - removes activity generated from eye movements and the heart. 
+```
+ICA analysis - removes activity generated from eye movements and the heart. 
+```
 raw.load_data()
 ica = ICA(n_components=0.95, method='fastica')
 ica.fit(raw, decim = 30)
@@ -148,38 +140,44 @@ ica.exclude.extend(ecg_indices)
 
 ica.apply(raw)
 
+```
 
-#Create events
+Create events from resting state data
+```
 tmin,tmax = 0,3   #3 second epochs
 baseline = None
 event_id = 1
 events = mne.event.make_fixed_length_events(raw, event_id, duration=tmax-tmin)
+```
 
-#rejection theshold is set by Auto_reject, but can be determined manually. 
+Rejection theshold is needed when generating epochs to reject noisy epochs. For this tutorial, the rejection theshold is set by Auto_reject, but can be determined manually. 
+```
 reject = dict(mag=1.96e-11, grad=3.50e-10)
-#reject = get_rejection_threshold(epochs)
-
-#Create epochs
+#reject = get_rejection_threshold(epochs) #Uncomment this if Auto_reject was used to determine the rejection threshold for noisy epochs. 
+```
+Creating epochs
+```
 epochs = mne.Epochs(raw, events, baseline=(0.0, None), tmin=tmin, tmax=tmax, event_id=event_id, picks=picks, reject=reject, preload=True)
 #epochs_clean = ar.fit_transform(epochs) 
-#Save epochs
-#epochs.save(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-epo.fif', overwrite=True)
+#Epochs can be saved to be loaded at another time using the code examples below:
+#epochs.save('.../MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-epo.fif', overwrite=True) #Use overwrite=True to save over files
 #Read Epochs back, checking the above file saved
-#mne.read_epochs(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-epo.fif', preload=True)
+#mne.read_epochs('.../MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-epo.fif', preload=True)
+```
 
-#Create the covariance matrix from the emptyroom recording
+Create the covariance matrix from the emptyroom recording. The Covariance matrix can be create from the epochs if empty rom recordings do now exist using https://mne.tools/stable/generated/mne.compute_covariance.html
+```
 emptyroom = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg.fif'
 raw_emptyroom = mne.io.read_raw_fif(emptyroom, preload = True, verbose = False)
 noise_cov = mne.compute_raw_covariance(raw_emptyroom)
 
-#Save covariance matrix
-#noise_cov.save(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif', overwrite=True)
+#The covariance matrix can be save using the code examples below:
+#noise_cov.save(.../MI02-sub-TESTsub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif', overwrite=False) #Use overwrite=True to save over files. 
 #Read covariance matrix back, checking the above file saved
-#noise_cov = mne.read_cov(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif')
+#noise_cov = mne.read_cov(.../MI02-sub-TESTsub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif')
+```
 
-
-#Connectivity - Circle Plot
-
+Generating the connectivity circle Plot
 #Set the directory to the MRI files
 subjects_dir = '/fred/oz120/freesurfer/subjects/'
 subject = 'MI02-sub-TEST'
