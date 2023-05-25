@@ -183,6 +183,7 @@ noise_cov = mne.compute_raw_covariance(raw_emptyroom)
 ```
 
 **Generating the connectivity circle Plot**
+
 #Set the directory to the MRI files and scan date/participant
 ```
 subjects_dir = '/fred/oz120/freesurfer/subjects/'
@@ -305,3 +306,13 @@ plot_connectivity_circle(conmat, label_names, n_lines=300,
                          title='All-to-All Connectivity left-Auditory '
                          'Condition (PLI)', ax=ax)
 fig.tight_layout()
+```
+ **Saving Images to file**
+ 
+ The generated connectivity plot can be saved as a high res (300dpi) image for publiction using the example code below. 
+ 
+ ```
+ plt.rcParams['savefig.facecolor']='black'
+ plt.savefig('../.png', dpi = 300, edgecolor='none')
+ ```
+ 
