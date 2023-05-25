@@ -55,7 +55,7 @@ apptainer exec  --bind /fred,/dagg,/home /dagg/public/neuro/containers/fmriprep-
 apptainer exec  --bind /fred,/dagg,/home --nv /dagg/public/neuro/cuda_ants_28_08_2020.sif /fred/oz120/freesurfer/scripts/MEGMRI_preproc.sh $SUBJECT
 (END)
 ---
-
+```
 Currently on OzStar, this container is needed when running connectivity analysis. 
 ml apptainer/latest
 singularity shell --bind /fred,/dagg/public/neuro  /dagg/public/neuro/containers/mneextended_1.2.2_20221207.sif
