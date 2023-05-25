@@ -1,4 +1,4 @@
-Add all of this  /fred/oz120/freesurfer/scripts/do_freesurfer_oz120.sh
+  /fred/oz120/freesurfer/scripts/do_freesurfer_oz120.sh
 #!/bin/bash
 
 export FREESURFER_HOME=/dagg/public/neuro/freesurfer-linux-centos7_x86_64-7.1.1
