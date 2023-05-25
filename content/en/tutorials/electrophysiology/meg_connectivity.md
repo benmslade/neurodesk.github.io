@@ -8,7 +8,7 @@ Email: bslade@swin.edu.au, wwoods@swin.edu.au
 Github: @benmslade
 Twitter: @Benmslade
  
-To generate a connectivity plot, the forward model and source space need to be computer. To generate thos files the Boundry Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
+To generate a connectivity plot, the forward model and source space need to be computed. To generate those files the Boundry Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
 
 To do this, run the script below: XXX is the project number.
 ```
@@ -86,7 +86,7 @@ sys.path = ['/home/bslade/pytmp'] + sys.path #this paths to where the mne_connec
 import mne_connectivity
 
 import mne
-#from autoreject import AutoReject #if using autoreject to detemine rejection threshold uncomment this line and the next. 
+#from autoreject import AutoReject #if using autoreject to determine rejection threshold uncomment this line and the next. 
 #from autoreject import get_rejection_threshold
 #reject = get_rejection_threshold(epochs)
 from mne.preprocessing import ICA
@@ -200,7 +200,7 @@ labels_vol = ['Left-Amygdala',
               'Right-Thalamus-Proper',
               'Right-Cerebellum-Cortex']
 ```
-Setup a surface-based source space. The parameteres and options used here are recommended by MNE Python when conducting MEG analysis. 
+Setup a surface-based source space. The parameters and options used here are recommended by MNE Python when conducting MEG analysis. 
 ```
 src = mne.setup_source_space(subject, spacing='oct6', subjects_dir=subjects_dir, add_dist=False)
 print(src)
@@ -214,10 +214,10 @@ src += vol_src
 scan_date = 'MI02-sub-TEST'   #Change this and 'subjects_dir' for other subjects
 bem_sol_fn = os.path.join(subjects_dir, scan_date, 'bem', '%s-5120-bem-sol.fif'%scan_date)
 bem = mne.read_bem_solution(bem_sol_fn)
-#Generate the forward soution
+#Generate the forward solution
 fwd = mne.make_forward_solution(raw_fname, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=5.0, n_jobs=2)
 print(fwd)
-#Can save these files using the code examples below, but not nessessary:
+#Can save these files using the code examples below, but not necessary:
 #mne.write_source_spaces(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-src.fif', src, overwrite=True, verbose=None)
 #mne.write_forward_solution(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-fwd.fif', fwd, overwrite=True, verbose=None)
 
@@ -227,7 +227,7 @@ print(fwd)
 
 snr = 1.0           
 inv_method = 'dSPM' # Can use MNE or sLORETA
-parc = 'aparc'      # The specifiies which parcellation (atlas) to use. Can use 'aparc' 'aparc.a2009s' instead. 
+parc = 'aparc'      # The specifies which parcellation (atlas) to use. Can use 'aparc' 'aparc.a2009s' instead. 
 lambda2 = 1.0 / snr ** 2
 
 # Compute inverse operator
@@ -310,7 +310,7 @@ fig.tight_layout()
 ```
  **Saving Images to file**
  
- The generated connectivity plot can be saved as a high res (300dpi) image for publiction using the example code below. 
+ The generated connectivity plot can be saved as a high res (300dpi) image for publication using the example code below. 
  
  ```
  plt.rcParams['savefig.facecolor']='black'
