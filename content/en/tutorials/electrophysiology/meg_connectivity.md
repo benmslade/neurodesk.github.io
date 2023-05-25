@@ -1,9 +1,9 @@
 This tutorial will produce circular connectivity plots
  
 Firstly, the Boundry Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
-To do this, run:
+To do this, run: XXX is the project number.
 ```
-python /fred/oz120/freesurfer/scripts/do_freesurfer_oz120.sh
+python /dagg/public/neuro/fred/oz120/freesurfer/scripts/do_freesurfer_ozXXX.sh 
 ```
 This script will run
 ```
