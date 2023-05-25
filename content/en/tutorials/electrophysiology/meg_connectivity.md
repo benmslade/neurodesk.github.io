@@ -55,21 +55,30 @@ apptainer exec  --bind /fred,/dagg,/home /dagg/public/neuro/containers/fmriprep-
 apptainer exec  --bind /fred,/dagg,/home --nv /dagg/public/neuro/cuda_ants_28_08_2020.sif /fred/oz120/freesurfer/scripts/MEGMRI_preproc.sh $SUBJECT
 (END)
 ---
-```
 
-#Currently on OzStar, this container is needed when running connectivity analysis. 
+Currently on OzStar, this container is needed when running connectivity analysis. 
+#Currently on OzStar, this container is needed for coregistration and connectivity analysis. 
 #ml apptainer/latest
-#singularity shell --bind /home/,/fred,/dagg/public/neuro  /dagg/public/neuro/containers/will/cuda_ants_cupy_10.2_Py3.9_R_v2b.sif
+#singularity shell --bind /fred,/dagg/public/neuro  /dagg/public/neuro/containers/mneextended_1.2.2_20221207.sif
+#source /opt/miniconda-4.7.12/etc/profile.d/conda.sh
+#conda activate mne-extended
+
+#Auto_Reject needs to be installed (e.g., pip install -U autoreject)
+#mne_connectivity is a seperate package and requires installation (e.g., pip install mne_connectivity)
 
 import os.path as op
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import scipy.stats
-import glob
+import sys
+sys.path = ['/home/bslade/pytmp'] + sys.path
+import mne_connectivity
 
 import mne
+#from autoreject import AutoReject
+#from autoreject import get_rejection_threshold
+#reject = get_rejection_threshold(epochs)
 from mne.preprocessing import ICA
 from mne.preprocessing import create_eog_epochs, create_ecg_epochs, corrmap
 from mne.minimum_norm import make_inverse_operator, apply_inverse_epochs, read_inverse_operator
@@ -80,9 +89,10 @@ from mne.minimum_norm import make_inverse_operator, apply_inverse_epochs
 from mne.viz import circular_layout
 from mne_connectivity import spectral_connectivity_epochs
 from mne_connectivity.viz import plot_connectivity_circle
-#mne_connectivity is a seperate package and requires installation (e.g., pip install mne_connectivity)
 
-#ozstar_project = 'XXX'
+#import sys
+#from path.lib mport Path
+#ozstar_project = 'XXX' XXX is the project number
 #meg_path = '/fred/%s/raw/meg/'%ozstar_project
 
 #file_list = list(Path(meg_path).rglob('*.fif'))
@@ -94,56 +104,27 @@ from mne_connectivity.viz import plot_connectivity_circle
 
 
 #Import raw file
-raw_fname = r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-rest_task-rest_meg.fif'
+raw_fname = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg.fif'
 raw = mne.io.read_raw_fif(raw_fname, preload = True, verbose = False)
-print(raw.info)
+raw.info['bads'] = ['MEG2131','MEG0143']
+picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exclude='bads')
+raw.load_data
+#Band pass filter from 1 - 40 Hz.
+raw.filter(1., 40., fir_design= 'firwin')
+raw.plot(group_by='selection')
 
-
-
-#To generate the trans file co-registration is needed before inporting the -trans.fif file
-#In the terminal use:
-#singularity shell --bind /fred,/dagg/public/neuro  /dagg/public/neuro/containers/mneextended_1.2.2_20221207.sif
-#source /opt/miniconda-4.7.12/etc/profile.d/conda.sh
-#conda activate mne-extended
-#mne coreg --subjects=/fred/oz80/freesurfer/subjects --high-res-head
+#To generate the trans file co-registration is needed before importing the -trans.fif file
+#In the terminal:mne coreg --subjects=/fred/oz120/freesurfer/subjects --high-res-head
 
 #Instructions on how to use the mne coreg are here: https://mne.tools/1.1/auto_tutorials/forward/20_source_alignment.html
-
-trans = r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-rest_task-rest_meg-trans.fif' #import -trans.fif file. Needed for forward solution and src files. 
-#src = mne.setup_source_space(subject, spacing='oct6', subjects_dir=subjects_dir, add_dist=False)
-#print(src)
-#sphere = (0.0, 0.0, 0.04, 0.09)
-#vol_src = mne.setup_volume_source_space(subject, subjects_dir=subjects_dir, sphere=sphere) #sphere_units='m')
-#print(vol_src)
-
-#subjects_dir = 'fred/oz/freesurfer/subjects/'
-#subject = '2213xTOUCH_001'
-
-#scan_date = '2213xTOUCH_001'   #Change this and 'subjects_dir' for other subjects
-
-#bem_sol_fn = os.path.join(subjects_dir, scan_date, 'bem', '%s-5120-bem-sol.fif'%scan_date)
-
-#bem = mne.read_bem_solution(bem_sol_fn)
-#fwd = mne.make_forward_solution(raw_fname, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=5.0, n_jobs=2)
-#print(fwd)
-
-#Write source space and forward solution files
-#mne.write_source_spaces(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-rest_task-rest_meg-src.fif', src, overwrite=True, verbose=None)
-#mne.write_forward_solution(r'/C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-rest_task-rest_meg-fwd.fif', fwd, overwrite=True, verbose=None)
-
-#Read source space and forward solution files
-#mne.read_source_spaces(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-rest_task-rest_meg-src.fif', patch_stats=False, verbose=None)
-#mne.read_forward_solution(r'/C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-rest_task-rest_meg-fwd.fif', include=(), exclude=('bads'),verbose=None)
-
-#Creating the forward solution. The source space needs to the computed before the forward solution is computed.
+#import -trans.fif file. Needed for forward solution and src files. 
+trans = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-trans.fif'
 
 raw.info['bads'] = ['MEG2131','MEG0143']
 picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exclude='bads')
 raw.load_data
 raw.filter(1., 40., fir_design= 'firwin')
 raw.plot(group_by='selection')
-
-reject = dict(mag=1.96e-11, grad=3.50e-10)
 
 #ICA analysis - removes activity generated from eye movements and the heart. 
 raw.load_data()
@@ -174,38 +155,34 @@ baseline = None
 event_id = 1
 events = mne.event.make_fixed_length_events(raw, event_id, duration=tmax-tmin)
 
-#Create epochs
-epochs = mne.Epochs(raw, events, baseline=(0.0, None), tmin=0.0, tmax=3, event_id=event_id, picks=picks, reject=reject, preload=True)
-#Save epochs
-epochs.save(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-epo.fif', overwrite=True)
-#Read Epochs back, checking the above file saved
-mne.read_epochs(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-epo.fif', preload=True)
+#rejection theshold is set by Auto_reject, but can be determined manually. 
+reject = dict(mag=1.96e-11, grad=3.50e-10)
+#reject = get_rejection_threshold(epochs)
 
-#
-#dont haveto save these, can just generate these withouth saving
+#Create epochs
+epochs = mne.Epochs(raw, events, baseline=(0.0, None), tmin=tmin, tmax=tmax, event_id=event_id, picks=picks, reject=reject, preload=True)
+#epochs_clean = ar.fit_transform(epochs) 
+#Save epochs
+#epochs.save(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-epo.fif', overwrite=True)
+#Read Epochs back, checking the above file saved
+#mne.read_epochs(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-epo.fif', preload=True)
+
 #Create the covariance matrix from the emptyroom recording
-emptyroom = r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg.fif'
+emptyroom = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg.fif'
 raw_emptyroom = mne.io.read_raw_fif(emptyroom, preload = True, verbose = False)
 noise_cov = mne.compute_raw_covariance(raw_emptyroom)
+
 #Save covariance matrix
-noise_cov.save(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif', overwrite=True)
+#noise_cov.save(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif', overwrite=True)
 #Read covariance matrix back, checking the above file saved
-noise_cov = mne.read_cov(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif')
+#noise_cov = mne.read_cov(r'C:\Users\bslade\Desktop\sub-TEST\ses-TEST\meg\sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif')
 
 
 #Connectivity - Circle Plot
-data_path = sample.data_path()
-subject = 'sample'
-data_dir = op.join(data_path, 'MEG', subject)
-subjects_dir = op.join(data_path, 'subjects')
-bem_dir = op.join(subjects_dir, subject, 'bem')
 
-# Set file names
-fname_aseg = op.join(subjects_dir, subject, 'mri', 'aseg.mgz')
-
-fname_model = op.join(bem_dir, '%s-5120-bem.fif' % subject)
-fname_bem = op.join(bem_dir, '%s-5120-bem-sol.fif' % subject)
-fname_trans = op.join(data_dir, 'sample_audvis_raw-trans.fif')
+#Set the directory to the MRI files
+subjects_dir = '/fred/oz120/freesurfer/subjects/'
+subject = 'MI02-sub-TEST'
 
 # List of sub structures we are interested in. We select only the
 # sub structures we want to include in the source space
@@ -219,23 +196,37 @@ labels_vol = ['Left-Amygdala',
 
 # Setup a surface-based source space, oct5 is not very dense (just used
 # to speed up this example; we recommend oct6 in actual analyses)
-src = setup_source_space(subject, subjects_dir=subjects_dir,
-                         spacing='oct5', add_dist=False)
+src = mne.setup_source_space(subject, spacing='oct6', subjects_dir=subjects_dir, add_dist=False)
+print(src)
+sphere = (0.0, 0.0, 0.04, 0.09)
 # Setup a volume source space
 # set pos=10.0 for speed, not very accurate; MNE Python recommend something smaller
 # like 5.0 in actual analyses:
-vol_src = setup_volume_source_space(
-    subject, mri=fname_aseg, pos=10.0, bem=fname_model,
-    add_interpolator=False,  # just for speed, usually use True
-    volume_label=labels_vol, subjects_dir=subjects_dir)
+vol_src = mne.setup_volume_source_space(subject, subjects_dir=subjects_dir, pos=5.0, add_interpolator=True, volume_label=labels_vol, sphere=sphere)
+print(vol_src)
 # Generate the mixed source space
 src += vol_src
 
-fwd = make_forward_solution(raw.info, fname_trans, src, fname_bem,
-                            mindist=5.0) 
+
+scan_date = 'MI02-sub-TEST'   #Change this and 'subjects_dir' for other subjects
+
+bem_sol_fn = os.path.join(subjects_dir, scan_date, 'bem', '%s-5120-bem-sol.fif'%scan_date)
+
+bem = mne.read_bem_solution(bem_sol_fn)
+fwd = mne.make_forward_solution(raw_fname, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=5.0, n_jobs=2)
+
+print(fwd)
+
+#Can save these files:
+#mne.write_source_spaces(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-src.fif', src, overwrite=True, verbose=None)
+#mne.write_forward_solution(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-fwd.fif', fwd, overwrite=True, verbose=None)
+
+#Read source space and forward solution .fif files
+#scr = mne.read_source_spaces(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-src.fif', patch_stats=False, verbose=None)
+#fwd = mne.read_forward_solution(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-fwd.fif', include=(), exclude=('bads'),verbose=None)
 
 snr = 1.0           # use smaller SNR for raw data
-inv_method = 'dSPM'
+inv_method = 'dSPM' # can use MNE or sLORETA
 parc = 'aparc'      # the parcellation to use, e.g., 'aparc' 'aparc.a2009s'
 
 lambda2 = 1.0 / snr ** 2
@@ -243,7 +234,7 @@ lambda2 = 1.0 / snr ** 2
 # Compute inverse operator
 inverse_operator = make_inverse_operator(
     epochs.info, fwd, noise_cov, depth=None, fixed=False)
-del fwd
+
 
 stcs = apply_inverse_epochs(epochs, inverse_operator, lambda2, inv_method,
                             pick_ori=None, return_generator=True)
@@ -252,31 +243,29 @@ stcs = apply_inverse_epochs(epochs, inverse_operator, lambda2, inv_method,
 labels_parc = mne.read_labels_from_annot(subject, parc=parc,
                                          subjects_dir=subjects_dir)
 
-# Average the source estimates within each label of the cortical parcellation
-# and each sub-structure contained in the source space.
+# Average the source estimates within each label of the cortical parcellation and each sub-structure contained in the source space.
 # When mode = 'mean_flip', this option is used only for the cortical labels.
 src = inverse_operator['src']
 label_ts = mne.extract_label_time_course(
     stcs, labels_parc, src, mode='mean_flip', allow_empty=True,
     return_generator=True)
 
-# We compute the connectivity in the alpha band and plot it using a circular
-# graph layout
-fmin = 8. #Can change the frequency bands here (delta:1Hz - 4Hz, theta:4Hz-8Hz, alpha:8Hz-13Hz, beta:13Hz-30Hz, gamma:30-Hz-50Hz)
+#Compute the connectivity (for the desired frequency band:delta:1Hz - 4Hz, theta:4Hz-8Hz, alpha:8Hz-13Hz, beta:13Hz-30Hz, gamma:30-Hz-50Hz)and plot it using a circular graph layout
+fmin = 8. 
 fmax = 13.
-sfreq = epochs.info['sfreq']  # the sampling frequency
+sfreq = epochs.info['sfreq']  # The sampling frequency
 con = spectral_connectivity_epochs(
     label_ts, method='pli', mode='multitaper', sfreq=sfreq, fmin=fmin,
     fmax=fmax, faverage=True, mt_adaptive=True, n_jobs=1)
 
-# We create a list of Label containing also the sub structures
+#Create a list of Label containing also the sub structures
 labels_aseg = mne.get_volume_labels_from_src(src, subject, subjects_dir)
 labels = labels_parc + labels_aseg
 
-# read colors
+# Read colors
 node_colors = [label.color for label in labels]
 
-# We reorder the labels based on their location in the left hemi
+#Reorder labels based on their location in the left hemisphere
 label_names = [label.name for label in labels]
 lh_labels = [name for name in label_names if name.endswith('lh')]
 rh_labels = [name for name in label_names if name.endswith('rh')]
@@ -297,10 +286,10 @@ else:
     label_ypos_lh.append(ypos)
 
 
-# Reorder the labels based on their location
+# Reorder labels based on their location
 lh_labels = [label for (yp, label) in sorted(zip(label_ypos_lh, lh_labels))]
 
-# For the right hemi
+# For right hemisphere
 rh_labels = [label[:-2] + 'rh' for label in lh_labels
              if label != 'Brain-Stem' and label[:-2] + 'rh' in rh_labels]
 
@@ -311,8 +300,7 @@ node_angles = circular_layout(label_names, node_order, start_pos=90,
                               group_boundaries=[0, len(label_names) // 2])
 
 
-# Plot the graph using node colors from the FreeSurfer parcellation. We only
-# show the 300 strongest connections.
+# Plot the graph using node colors from the FreeSurfer parcellation. By default, MNE Python only shows 300 strongest connections.
 conmat = con.get_data(output='dense')[:, :, 0]
 fig, ax = plt.subplots(figsize=(8, 8), facecolor='black',
                        subplot_kw=dict(polar=True))
@@ -321,7 +309,6 @@ plot_connectivity_circle(conmat, label_names, n_lines=300,
                          title='All-to-All Connectivity left-Auditory '
                          'Condition (PLI)', ax=ax)
 fig.tight_layout()
-
 
 title: "Template for tutorial creation"
 linkTitle: "Workflow template"
