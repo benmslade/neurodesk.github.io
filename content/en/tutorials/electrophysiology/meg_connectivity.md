@@ -8,7 +8,7 @@ Email: bslade@swin.edu.au, wwoods@swin.edu.au
 Github: @benmslade
 Twitter: @Benmslade
  
-To generate a connectivity plot, the forward model and source space need to be computed. To generate those files the Boundry Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
+To generate a connectivity plot, the forward model and source space need to be computed. To generate those files the Boundary Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
 
 To do this, run the script below: XXX is the project number.
 ```
@@ -73,7 +73,7 @@ conda activate mne-extended
 
 Installations:
 Auto_Reject needs to be installed: e.g., pip install -U autoreject. Available here: (https://autoreject.github.io/stable/index.html)
-mne_connectivity is a seperate package and requires installation: e.g., pip install mne_connectivity. Available here: (https://mne.tools/mne-connectivity/stable/index.html)
+mne_connectivity is a separate package and requires installation: e.g., pip install mne_connectivity. Available here: (https://mne.tools/mne-connectivity/stable/index.html)
 
 ```
 import os.path as op
@@ -156,7 +156,7 @@ event_id = 1
 events = mne.event.make_fixed_length_events(raw, event_id, duration=tmax-tmin)
 ```
 
-A rejection theshold is needed when generating epochs to reject noisy epochs. For this tutorial, the rejection theshold is set by Auto_reject, but can be determined manually. 
+A rejection threshold is needed when generating epochs to reject noisy epochs. For this tutorial, the rejection threshold is set by Auto_reject, but can be determined manually. 
 ```
 reject = dict(mag=1.96e-11, grad=3.50e-10) #This rejection threshold was selected for this raw.fif file. 
 #reject = get_rejection_threshold(epochs) #Uncomment this if Auto_reject was used to determine the rejection threshold for noisy epochs. 
@@ -190,7 +190,7 @@ noise_cov = mne.compute_raw_covariance(raw_emptyroom)
 subjects_dir = '/fred/oz120/freesurfer/subjects/'
 subject = 'MI02-sub-TEST'
 ```
-Is wanted, a list of sub structures can be shown on the connectivity circle plot byt selecteing the sub strucutres to include in the source space"
+If wanted, a list of sub structures can be shown on the connectivity circle plot by selecteing the sub structures to include in the source space.
 ```
 labels_vol = ['Left-Amygdala',
               'Left-Thalamus-Proper',
@@ -232,7 +232,7 @@ lambda2 = 1.0 / snr ** 2
 
 # Compute inverse operator
 inv_operator = make_inverse_operator(epochs.info, fwd, noise_cov, depth=None, fixed=False)
-#Can save the inverse operator using the code exmaples below:
+#Can save the inverse operator using the code examples below:
 #inv = mne.minimum_norm.write_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif', inv_operator, overwrite=True, verbose=None)
 #Read the /-inv.fif files. 
 #inv = mne.minimum_norm.read_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif')
