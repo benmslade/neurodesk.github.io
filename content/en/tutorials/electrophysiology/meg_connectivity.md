@@ -1,4 +1,12 @@
-  /fred/oz120/freesurfer/scripts/do_freesurfer_oz120.sh
+This tutorial will produce circular connectivity plots
+ 
+Firstly, the Boundry Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
+To do this, run:
+```
+python /fred/oz120/freesurfer/scripts/do_freesurfer_oz120.sh
+```
+This script will run
+```
 #!/bin/bash
 
 export FREESURFER_HOME=/dagg/public/neuro/freesurfer-linux-centos7_x86_64-7.1.1
@@ -47,6 +55,8 @@ apptainer exec  --bind /fred,/dagg,/home /dagg/public/neuro/containers/fmriprep-
 apptainer exec  --bind /fred,/dagg,/home --nv /dagg/public/neuro/cuda_ants_28_08_2020.sif /fred/oz120/freesurfer/scripts/MEGMRI_preproc.sh $SUBJECT
 (END)
 ---
+```
+
 #Currently on OzStar, this container is needed when running connectivity analysis. 
 #ml apptainer/latest
 #singularity shell --bind /home/,/fred,/dagg/public/neuro  /dagg/public/neuro/containers/will/cuda_ants_cupy_10.2_Py3.9_R_v2b.sif
