@@ -252,6 +252,7 @@ label_ts = mne.extract_label_time_course(
 fmin = 8. 
 fmax = 13.
 sfreq = epochs.info['sfreq']  # The sampling frequency
+#Method can be 'pli', 'wpli2_debiased', 'ciplv'
 con = spectral_connectivity_epochs(
     label_ts, method='pli', mode='multitaper', sfreq=sfreq, fmin=fmin,
     fmax=fmax, faverage=True, mt_adaptive=True, n_jobs=1)
