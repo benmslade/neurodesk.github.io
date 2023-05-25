@@ -1,4 +1,12 @@
-This tutorial will produce circular connectivity plots
+title: "Connectivity Circular Plot"
+linkTitle: "Example Code"
+weight: 1
+tags: ["Connectivity", "MEG", "MNE python", "freesurfer", "Coregistration"]
+author: Benjamin M Slade and Will Woods
+description: > This tutorial will produce one circular connectivity plot generated from epochs. 
+Email: bslade@swin.edu.au, wwoods@swin.edu.au
+Github: @benmslade
+Twitter: @Benmslade
  
 Firstly, the Boundry Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
 To do this, run: XXX is the project number.
@@ -91,6 +99,8 @@ from mne.viz import circular_layout
 from mne_connectivity import spectral_connectivity_epochs
 from mne_connectivity.viz import plot_connectivity_circle
 ```
+**Pre-Processing Raw MEG Data**
+
 Import raw file
 ```
 raw_fname = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg.fif'
@@ -109,15 +119,11 @@ raw.plot(group_by='selection')
 mne coreg --subjects=/fred/oz120/freesurfer/subjects --high-res-head
 ```
 #Instructions on how to use the mne coreg are here: https://mne.tools/1.1/auto_tutorials/forward/20_source_alignment.html
-#import -trans.fif file. The trans.fif file is nmeeded to produce the forward solution and source space file. 
+#Readin the saved -trans.fif file. The -trans.fif file is needed to produce the forward solution and source space file. 
 ```
 trans = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-trans.fif'
-picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exclude='bads')
-raw.load_data
-raw.filter(1., 40., fir_design= 'firwin')
-raw.plot(group_by='selection')
 ```
-ICA analysis - removes activity generated from eye movements and the heart. 
+ICA analysis - removes artifact generated from eye movements and the heart. 
 ```
 raw.load_data()
 ica = ICA(n_components=0.95, method='fastica')
@@ -141,7 +147,6 @@ ica.exclude.extend(ecg_indices)
 ica.apply(raw)
 
 ```
-
 Create events from resting state data
 ```
 tmin,tmax = 0,3   #3 second epochs
@@ -150,7 +155,7 @@ event_id = 1
 events = mne.event.make_fixed_length_events(raw, event_id, duration=tmax-tmin)
 ```
 
-Rejection theshold is needed when generating epochs to reject noisy epochs. For this tutorial, the rejection theshold is set by Auto_reject, but can be determined manually. 
+A rejection theshold is needed when generating epochs to reject noisy epochs. For this tutorial, the rejection theshold is set by Auto_reject, but can be determined manually. 
 ```
 reject = dict(mag=1.96e-11, grad=3.50e-10)
 #reject = get_rejection_threshold(epochs) #Uncomment this if Auto_reject was used to determine the rejection threshold for noisy epochs. 
@@ -165,7 +170,7 @@ epochs = mne.Epochs(raw, events, baseline=(0.0, None), tmin=tmin, tmax=tmax, eve
 #mne.read_epochs('.../MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-epo.fif', preload=True)
 ```
 
-Create the covariance matrix from the emptyroom recording. The Covariance matrix can be create from the epochs if empty rom recordings do now exist using https://mne.tools/stable/generated/mne.compute_covariance.html
+Create the covariance matrix from the emptyroom recording. The Covariance matrix can be create from the epochs if empty room recordings do not exist by using https://mne.tools/stable/generated/mne.compute_covariance.html
 ```
 emptyroom = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg.fif'
 raw_emptyroom = mne.io.read_raw_fif(emptyroom, preload = True, verbose = False)
@@ -177,13 +182,14 @@ noise_cov = mne.compute_raw_covariance(raw_emptyroom)
 #noise_cov = mne.read_cov(.../MI02-sub-TESTsub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif')
 ```
 
-Generating the connectivity circle Plot
-#Set the directory to the MRI files
+**Generating the connectivity circle Plot**
+#Set the directory to the MRI files and scan date/participant
+```
 subjects_dir = '/fred/oz120/freesurfer/subjects/'
 subject = 'MI02-sub-TEST'
-
-# List of sub structures we are interested in. We select only the
-# sub structures we want to include in the source space
+```
+Is wanted, a list of sub structures can be shown on the connectivity circle plot byt selecteing the sub strucutres to include in the source space"
+```
 labels_vol = ['Left-Amygdala',
               'Left-Thalamus-Proper',
               'Left-Cerebellum-Cortex',
@@ -191,31 +197,25 @@ labels_vol = ['Left-Amygdala',
               'Right-Amygdala',
               'Right-Thalamus-Proper',
               'Right-Cerebellum-Cortex']
-
-# Setup a surface-based source space, oct5 is not very dense (just used
-# to speed up this example; we recommend oct6 in actual analyses)
+```
+Setup a surface-based source space. The parameteres and options used here are recommended by MNE Python when conducting MEG analysis. 
+```
 src = mne.setup_source_space(subject, spacing='oct6', subjects_dir=subjects_dir, add_dist=False)
 print(src)
 sphere = (0.0, 0.0, 0.04, 0.09)
 # Setup a volume source space
-# set pos=10.0 for speed, not very accurate; MNE Python recommend something smaller
-# like 5.0 in actual analyses:
 vol_src = mne.setup_volume_source_space(subject, subjects_dir=subjects_dir, pos=5.0, add_interpolator=True, volume_label=labels_vol, sphere=sphere)
 print(vol_src)
 # Generate the mixed source space
 src += vol_src
 
-
 scan_date = 'MI02-sub-TEST'   #Change this and 'subjects_dir' for other subjects
-
 bem_sol_fn = os.path.join(subjects_dir, scan_date, 'bem', '%s-5120-bem-sol.fif'%scan_date)
-
 bem = mne.read_bem_solution(bem_sol_fn)
+#Generate the forward soution
 fwd = mne.make_forward_solution(raw_fname, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=5.0, n_jobs=2)
-
 print(fwd)
-
-#Can save these files:
+#Can save these files using the code examples below, but not nessessary:
 #mne.write_source_spaces(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-src.fif', src, overwrite=True, verbose=None)
 #mne.write_forward_solution(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-fwd.fif', fwd, overwrite=True, verbose=None)
 
@@ -223,23 +223,21 @@ print(fwd)
 #scr = mne.read_source_spaces(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-src.fif', patch_stats=False, verbose=None)
 #fwd = mne.read_forward_solution(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-fwd.fif', include=(), exclude=('bads'),verbose=None)
 
-snr = 1.0           # use smaller SNR for raw data
-inv_method = 'dSPM' # can use MNE or sLORETA
-parc = 'aparc'      # the parcellation to use, e.g., 'aparc' 'aparc.a2009s'
-
+snr = 1.0           
+inv_method = 'dSPM' # Can use MNE or sLORETA
+parc = 'aparc'      # The specifiies which parcellation (atlas) to use. Can use 'aparc' 'aparc.a2009s' instead. 
 lambda2 = 1.0 / snr ** 2
 
 # Compute inverse operator
-inverse_operator = make_inverse_operator(
-    epochs.info, fwd, noise_cov, depth=None, fixed=False)
+inv_operator = make_inverse_operator(epochs.info, fwd, noise_cov, depth=None, fixed=False)
+#Can save the inverse operator using the code exmaples below:
+#inv = mne.minimum_norm.write_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif', inv_operator, overwrite=True, verbose=None)
+#Read the /-inv.fif files. 
+#inv = mne.minimum_norm.read_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif')
 
-
-stcs = apply_inverse_epochs(epochs, inverse_operator, lambda2, inv_method,
-                            pick_ori=None, return_generator=True)
-
-# Get labels for FreeSurfer 'aparc' cortical parcellation with 34 labels/hemi
-labels_parc = mne.read_labels_from_annot(subject, parc=parc,
-                                         subjects_dir=subjects_dir)
+stcs = apply_inverse_epochs(epochs, inverse_operator, lambda2, inv_method,pick_ori=None, return_generator=True)
+# Get labels for FreeSurfer 'aparc' cortical parcellation with 34 labels per a hemisphere
+labels_parc = mne.read_labels_from_annot(subject, parc=parc, subjects_dir=subjects_dir)
 
 # Average the source estimates within each label of the cortical parcellation and each sub-structure contained in the source space.
 # When mode = 'mean_flip', this option is used only for the cortical labels.
@@ -307,195 +305,3 @@ plot_connectivity_circle(conmat, label_names, n_lines=300,
                          title='All-to-All Connectivity left-Auditory '
                          'Condition (PLI)', ax=ax)
 fig.tight_layout()
-
-title: "Template for tutorial creation"
-linkTitle: "Workflow template"
-weight: 1
-tags: ["template", "documentation"]
-author: Angela I. Renton
-description: > 
-  Follow this template to contribute your own tutorial to the Neurodesk documentation.
----
-<!--
-Begin setting up your tutorial by filling in the details in the description above. This controls how your tutorial is named and displayed in the Neurodesk documentation. The details are as follows:
-
-title: A title for your tutorial
-linkTitle: A shortened version of the title for the menu
-weight: This controls where in the menu your tutorial will appear; you can leave this set to 1 for default sorting 
-tags: List any number of tags to help others find this tutorial. i.e. "eeg", "mvpa", "statistics"
-description: > a short description of your tutorial. This will form the subheading for the tutorial page. 
-
-Once you've filled out those details, you can delete this comment block. 
--->
-
-> _This tutorial was created by Name P. Namington._ 
->
-> Email: n.namington@institution.edu.au
->
-> Github: @Namesgit
->
-> Twitter: @Nameshandle
->
-<!-- Fill in your personal details above so that we can credit the tutorial to you. Feel free to add any additional contact details i.e. website, or remove those that are irrelevant -->
-
-Welcome to the workflow (tutorial) template, which you can use to contribute your own neurodesk workflow to our documentation. We aim to collect a wide variety of workflows representing the spectrum of tools available under the neurodesk architecture and the diversity in how researchers might apply them. Please add plenty of descriptive detail and make sure that all steps of the workflow work before submitting the tutorial. 
-
-## How to contribute a new workflow
-
-Begin by creating a copy of our documentation that you can edit:
-1. Visit the github repository for the Neurodesk documentation (https://github.com/NeuroDesk/neurodesk.github.io).
-2. [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) the repository.
-- _You should now have your own copy of the documentation, which you can alter without affecting our official documentation. You should see a panel stating "This branch is up to date with Neurodesk:main." If someone else makes a change to the official documentation, the statement will change to reflect this. You can bring your repository up to date by clicking "Fetch upstream"._ 
-
-Next, create your workflow:
-1. [Clone](https://docs.github.com/en/get-started/quickstart/fork-a-repo#cloning-your-forked-repository) your forked version of our documentation to a location of your choice on your computer. 
-2. In this new folder, navigate to "neurodesk.github.io/content/en/tutorials" and then navigate to the subfolder you believe your workflow belongs in (e.g. "/functional_imaging"). 
-3. Create a new, appropriately named markdown file to house your workflow. (e.g. "/physio.md")
-4. Open this file in the editor of your choice (we recommend [vscode](https://code.visualstudio.com/)) and populate it with your workflow! Please use this template as a style guide, it can be located at "neurodesk.github.io\content\en\tutorials\documentation\workflowtemplate.md". You're also welcome to have a look at other the workflows already documented on our website for inspiration. 
-
-Finally, contribute your new workflow to the official documentation!:
-1. Once you are happy with your workflow, make sure you [commit](https://github.com/git-guides/git-commit) all your changes and [push](https://github.com/git-guides/git-push) these local commits to github.
-2. Navigate to your forked version of the repository on github.
-3. Before you proceed, make sure you are up to date with our upstream documentation, you may need to [fetch upstream changes](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork).
-4. Now you can preview the changes before contributing them upstream. For this click on the "Actions" tab and enable the Actions ("I understand my workflows..."). The first build will fail (due to a bug with the Github token), but the second build will work.
-5. Then you need to open the settings of the repository and check that Pages points to gh-pages and when clicking on the link the site should be there.
-6. To contribute your changes, click "Contribute", and then ["Open pull request"](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
-7. Give your pull request a title (e.g. "Document PhysIO workflow"), leave a comment briefly describing what you have done, and then create the pull request. 
-8. Someone from the Neurodesk team will review and accept your workflow and it will appear on our website soon!. 
-
-Thanks so much for taking the time to contribute your workflow to the Neurodesk community! If you have any feedback on the process, please let us know on [github discussions](https://github.com/orgs/NeuroDesk/discussions).
-
-## Formatting guidelines
-
-You can embelish your text in this tutorial using markdown conventions; text can be **bold**, _italic_, or ~~strikethrough~~. You can also add [Links](https://www.neurodesk.org/), and you can organise your tutorial with headers, starting at level 2 (the page title is a level 1 header):
-
-## Level 2 heading
-
-You can also include progressively smaller subheadings:
-
-### Level 3 heading
-
-Some more detailed information. 
-
-#### Level 4 heading
-
-Even more detailed information. 
-
-### Code blocks
-
-You can add codeblocks to your tutorial as follows:
-
-```none
-# Some example code
-import numpy as np
-a = np.array([1, 2])
-b = np.array([3, 4])
-print(a+b)
-```
-
-Or add syntax highlighting to your codeblocks:
-```go
-# Some example code
-import numpy as np
-a = np.array([1, 2])
-b = np.array([3, 4])
-print(a+b)
-```
-
-Advanced code or command line formatting using this html snippet:
-```bash
-# Some example code
-import numpy as np
-a = np.array([1, 2])
-b = np.array([3, 4])
-print(a+b)
-[4 6]
-```
-
-You can also add code snippets, e.g. `var foo = "bar";`, which will be shown inline.
-
-### Images
-
-To add screenshots to your tutorial, create a subfolder in `neurodesk.github.io/static` with the same link name as your tutorial. Add your screenshot to this folder, keeping in mind that you may want to adjust your screenshot to a reasonable size before uploading. You can then embed these images in your tutorial using the following convention: 
-
-```
-![EEGtut1](/EEG_Tutorial/EEGtut1.png 'EEGtut1') <!-- ![filename without extension](/subfolder_name/filename.png '[filename without extension')  -->
-```
-![EEGtut1](/EEG_Tutorial/EEGtut1.png 'EEGtut1') <!-- ![filename without extension](/subfolder_name/filename.png '[filename without extension')  -->
-
-### Alerts and warnings
-
-You can grab reader's attention to particularly important information with quoteblocks, alerts and warnings:
-
-> This is a quoteblock
-
-{{< alert >}}This is an alert.{{< /alert >}}
-{{< alert title="Note" >}}This is an alert with a title.{{< /alert >}}
-{{< alert color="warning" >}}This is a warning.{{< /alert >}}
-{{< alert color="warning" title="Warning" >}}This is a warning with a title.{{< /alert >}}
-
-You can also segment information as follows:
-
-----------------
-
-There's a horizontal rule above and below this.
-
-----------------
-
-Or add page information:
-{{% pageinfo %}}
-This is a placeholder. Replace it with your own content.
-{{% /pageinfo %}}
-
-### Tables
-
-You may want to order information in a table as follows:
-
-| Neuroscientist           | Notable work                                         | Lifetime  |
-|--------------------------|------------------------------------------------------|-----------|
-| Santiago Ramón y Cajal   | Investigations on microscopic structure of the brain | 1852–1934 |
-| Rita Levi-Montalcini     | Discovery of nerve growth factor (NGF)               | 1909–2012 |
-| Anne Treisman            | Feature integration theory of attention              | 1935–2018 |
-
-### Lists
-
-You may want to organise information in a list as follows:
-
-Here is an unordered list:
-
-* Rstudio
-* JASP
-* SPSS
-
-And an ordered list:
-
-1. Collect data
-2. Try to install analysis software
-3. Cry a little
-
-And an unordered task list:
-
-- [x] Install Neurodesktop
-- [x] Analyse data
-- [ ] Take a vacation
-
-And a "mixed" task list:
-
-- [ ] writing
-- ?
-- [ ] more writing probably
-
-And a nested list:
-
-* EEG file extensions
-  * .eeg, .vhdr, .vmrk
-  * .edf
-  * .bdf
-  * .set, .fdt
-  * .smr
-* MEG file extensions
-  * .ds
-  * .fif
-  * .sqd
-  * .raw
-  * .kdf
