@@ -72,7 +72,7 @@ source /opt/miniconda-4.7.12/etc/profile.d/conda.sh
 conda activate mne-extended
 
 Installations:
-Auto_Reject needs to be installed: e.g., pip install -U autoreject. Available here: (https://autoreject.github.io/stable/index.html)
+If using Auto_Reject, this needs to be installed: e.g., pip install -U autoreject. Available here: (https://autoreject.github.io/stable/index.html)
 mne_connectivity is a separate package and requires installation: e.g., pip install mne_connectivity. Available here: (https://mne.tools/mne-connectivity/stable/index.html)
 
 ```
