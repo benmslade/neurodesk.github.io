@@ -8,8 +8,10 @@ Email: bslade@swin.edu.au, wwoods@swin.edu.au
 Github: @benmslade
 Twitter: @Benmslade
  
-The MEG data used in this tutorial can be found on OzStar: /home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/
-The MRI data used in this tutorial can be found on OzStar: /fred/oz120/freesurfer/subjects/MI02-sub-TEST/
+*The MEG data used in this tutorial can be found on OzStar: /home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/*
+*The MRI data used in this tutorial can be found on OzStar: /fred/oz120/freesurfer/subjects/MI02-sub-TEST/*
+
+
 To generate a connectivity plot, the forward model and source space need to be computed. To generate those files the Boundary Element Models and the files needed co-registration of MEG and MRI data have to be created from the raw DICOM files. 
 
 To do this, run the script below: XXX is the project number.
