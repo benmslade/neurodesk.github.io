@@ -314,7 +314,7 @@ plot_connectivity_circle(conmat, label_names, n_lines=300,
                          'Condition (PLI)', ax=ax)
 fig.tight_layout()
 ```
- **Saving Images to file**
+ **Saving Images to File**
  
  The generated connectivity plot can be saved as a high res (300dpi) image for publication using the example code below. 
  
@@ -322,4 +322,13 @@ fig.tight_layout()
  plt.rcParams['savefig.facecolor']='black'
  plt.savefig('../.png', dpi = 300, edgecolor='none') #edgecolour=None ensure the plot can be seen from the background
  ```
+ 
+ **Saving Connecivity Matrix as a CSV File**
+ 
+ Use this example code below to save the connectivity matrix as a CSV file. 
+ 
+```
+import pandas as pd
+MEG_CONNECTIVITY_arr = con.get_data(output='dense')[:, :, 0] #This gets the data from the connectivity measure (con). 
+pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(r'C:\Users\bslade\Desktop\meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
  
