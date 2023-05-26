@@ -9,6 +9,7 @@ Github: @benmslade
 Twitter: @Benmslade
  
 *The MEG data used in this tutorial can be found on OzStar: /home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/*
+
 *The MRI data used in this tutorial can be found on OzStar: /fred/oz120/freesurfer/subjects/MI02-sub-TEST/*
 
 
