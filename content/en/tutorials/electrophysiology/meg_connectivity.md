@@ -344,4 +344,13 @@ MEG_CONNECTIVITY_arr = con.get_data(output='dense')[:, :, 0] #This gets the data
 pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
 
 ```
+ **Saving Anatomical Labels**
  
+ To save and print the anatomical labels to a text file, use the exmaple code below.
+ 
+ ```
+ import pickel
+ with open('labels.txt', 'w') as outfile:
+    outfile.write('\n'.join(str(i) for i in labels))
+ ```
+  
