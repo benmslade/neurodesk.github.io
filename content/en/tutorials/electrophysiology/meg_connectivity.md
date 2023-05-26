@@ -1,4 +1,4 @@
-title: "Connectivity Circular Plot"
+title: "Connectivity Circular Plot Using MNE Python"
 linkTitle: "Example Code"
 weight: 1
 tags: ["Connectivity", "MEG", "MNE python", "freesurfer", "Coregistration"]
@@ -310,10 +310,12 @@ fig, ax = plt.subplots(figsize=(8, 8), facecolor='black',
                        subplot_kw=dict(polar=True))
 plot_connectivity_circle(conmat, label_names, n_lines=300,
                          node_angles=node_angles, node_colors=node_colors,
-                         title='All-to-All Connectivity left-Auditory '
-                         'Condition (PLI)', ax=ax)
+                         title='', ax=ax) #Insert a title for the plot is needed
 fig.tight_layout()
 ```
+The code above produces this connectivity plot. 
+
+
  **Saving Images to File**
  
  The generated connectivity plot can be saved as a high res (300dpi) image for publication using the example code below. 
@@ -331,4 +333,6 @@ fig.tight_layout()
 import pandas as pd
 MEG_CONNECTIVITY_arr = con.get_data(output='dense')[:, :, 0] #This gets the data from the connectivity measure (con). 
 pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(r'C:\Users\bslade\Desktop\meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
+
+```
  
