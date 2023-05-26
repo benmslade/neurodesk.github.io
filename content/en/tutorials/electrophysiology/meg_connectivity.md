@@ -315,6 +315,7 @@ fig.tight_layout()
 ```
 The code above produces this connectivity plot. 
 
+![Resting_State_Connectivity_AEDAPT_Screeshot](https://github.com/benmslade/neurodesk.github.io/assets/38899196/7d78aec9-aa71-4251-bfb9-eff8485c090d)
 
  **Saving Images to File**
  
@@ -332,7 +333,7 @@ The code above produces this connectivity plot.
 ```
 import pandas as pd
 MEG_CONNECTIVITY_arr = con.get_data(output='dense')[:, :, 0] #This gets the data from the connectivity measure (con). 
-pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(r'C:\Users\bslade\Desktop\meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
+pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
 
 ```
  
