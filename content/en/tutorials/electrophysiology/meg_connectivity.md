@@ -1,11 +1,19 @@
 title: "Connectivity Circular Plot Using MNE Python"
+
 linkTitle: "Example Code"
+
 weight: 1
+
 tags: ["Connectivity", "MEG", "MNE python", "freesurfer", "Coregistration"]
+
 author: Benjamin M Slade and Will Woods
+
 description: > This tutorial will produce one circular connectivity plot from epochs. 
+
 Email: bslade@swin.edu.au, wwoods@swin.edu.au
+
 Github: @benmslade
+
 Twitter: @Benmslade
  
 *The MEG data used in this tutorial can be found on OzStar: /home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/*
