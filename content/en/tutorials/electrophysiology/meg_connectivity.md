@@ -16,7 +16,7 @@ Github: @benmslade
 
 Twitter: @Benmslade
  
-*The MEG data used in this tutorial can be found on OzStar: /home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/*
+*The MEG data used in this tutorial can be found on OzStar: /fred/oz120/AEDAPT/MI02-sub-TEST/ses-TST/meg*
 
 *The MRI data used in this tutorial can be found on OzStar: /fred/oz120/freesurfer/subjects/MI02-sub-TEST/*
 
@@ -117,7 +117,7 @@ from mne_connectivity.viz import plot_connectivity_circle
 
 Import raw file
 ```
-raw_fname = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg.fif'
+raw_fname = '//fred/oz120/AEDAPT/MI02-sub-TEST/ses-TST/meg/sub-TEST_ses-rest_task-rest_meg.fif'
 raw = mne.io.read_raw_fif(raw_fname, preload = True, verbose = False)
 raw.info['bads'] = ['MEG2131','MEG0143']
 picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False, stim=False, exclude='bads')
@@ -135,7 +135,7 @@ mne coreg --subjects=/fred/oz120/freesurfer/subjects --high-res-head
 #Instructions on how to use the mne coreg are here: (https://mne.tools/1.1/auto_tutorials/forward/20_source_alignment.html)
 #Readin the saved -trans.fif file. The -trans.fif file is needed to produce the forward solution and source space file. 
 ```
-trans = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-trans.fif'
+trans = '/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TST/meg/sub-TEST_ses-rest_task-rest_meg-trans.fif'
 ```
 ICA analysis - removes artifact generated from eye movements and the heart. 
 ```
@@ -186,7 +186,7 @@ epochs = mne.Epochs(raw, events, baseline=(0.0, None), tmin=tmin, tmax=tmax, eve
 
 Create the covariance matrix from the emptyroom recording. The Covariance matrix can be create from the epochs if empty room recordings do not exist by using (https://mne.tools/stable/generated/mne.compute_covariance.html)
 ```
-emptyroom = '/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg.fif'
+emptyroom = '/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg.fif'
 raw_emptyroom = mne.io.read_raw_fif(emptyroom, preload = True, verbose = False)
 noise_cov = mne.compute_raw_covariance(raw_emptyroom)
 
@@ -341,7 +341,7 @@ The code above produces this connectivity plot.
 ```
 import pandas as pd
 MEG_CONNECTIVITY_arr = con.get_data(output='dense')[:, :, 0] #This gets the data from the connectivity measure (con). 
-pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(/home/bslade/AEDAPT/MI02-sub-TEST/ses-TEST/meg/meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
+pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TST/meg/meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
 
 ```
  **Saving Anatomical Labels**
