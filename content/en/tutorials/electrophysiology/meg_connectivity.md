@@ -133,7 +133,7 @@ raw.plot(group_by='selection')
 mne coreg --subjects=/fred/oz120/freesurfer/subjects --high-res-head
 ```
 #Instructions on how to use the mne coreg are here: (https://mne.tools/1.1/auto_tutorials/forward/20_source_alignment.html)
-#Readin the saved -trans.fif file. The -trans.fif file is needed to produce the forward solution and source space file. 
+#Read in the saved -trans.fif file. The -trans.fif file is needed to produce the forward solution and source space file. 
 ```
 trans = '/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-trans.fif'
 ```
