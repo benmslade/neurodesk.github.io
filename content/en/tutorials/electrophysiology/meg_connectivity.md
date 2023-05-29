@@ -246,7 +246,7 @@ lambda2 = 1.0 / snr ** 2
 # Compute inverse operator
 inverse_operator = make_inverse_operator(epochs.info, fwd, noise_cov, depth=None, fixed=False)
 #Can save the inverse operator using the code examples below:
-#inverse = mne.minimum_norm.write_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif', inv_operator, overwrite=True, verbose=None)
+#inverse = mne.minimum_norm.write_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif', inverse_operator, overwrite=True, verbose=None)
 #Read the /-inv.fif files. 
 #inverse_operator = mne.minimum_norm.read_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif')
 
