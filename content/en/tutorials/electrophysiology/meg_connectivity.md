@@ -135,7 +135,7 @@ mne coreg --subjects=/fred/oz120/freesurfer/subjects --high-res-head
 #Instructions on how to use the mne coreg are here: (https://mne.tools/1.1/auto_tutorials/forward/20_source_alignment.html)
 #Read in the saved -trans.fif file. The -trans.fif file is needed to produce the forward solution and source space file. 
 ```
-trans = '/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-trans.fif'
+trans = '/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TEST/meg/trans/sub-TEST_ses-rest_task-rest_meg-trans.fif'
 ```
 ICA analysis - removes artifact generated from eye movements and the heart. 
 ```
@@ -179,9 +179,9 @@ Creating epochs
 epochs = mne.Epochs(raw, events, baseline=(0.0, None), tmin=tmin, tmax=tmax, event_id=event_id, picks=picks, reject=reject, preload=True)
 #epochs_clean = ar.fit_transform(epochs) 
 #Epochs can be saved to be loaded at another time using the code examples below:
-#epochs.save('.../MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-epo.fif', overwrite=True) #Use overwrite=True to save over files
+#epochs.save('.../MI02-sub-TEST/ses-TEST/meg/epo/sub-TEST_ses-rest_task-rest_meg-epo.fif', overwrite=True) #Use overwrite=True to save over files
 #Read Epochs back, checking the above file saved
-#mne.read_epochs('.../MI02-sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-epo.fif', preload=True)
+#mne.read_epochs('.../MI02-sub-TEST/ses-TEST/meg/epo/sub-TEST_ses-rest_task-rest_meg-epo.fif', preload=True)
 ```
 
 Create the covariance matrix from the emptyroom recording. The Covariance matrix can be create from the epochs if empty room recordings do not exist by using (https://mne.tools/stable/generated/mne.compute_covariance.html)
@@ -191,9 +191,9 @@ raw_emptyroom = mne.io.read_raw_fif(emptyroom, preload = True, verbose = False)
 noise_cov = mne.compute_raw_covariance(raw_emptyroom)
 
 #The covariance matrix can be save using the code examples below:
-#noise_cov.save(.../MI02-sub-TESTsub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif', overwrite=False) #Use overwrite=True to save over files. 
+#noise_cov.save(.../MI02-sub-TESTsub-TEST/ses-TEST/meg/cov/sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif', overwrite=False) #Use overwrite=True to save over files. 
 #Read covariance matrix back, checking the above file saved
-#noise_cov = mne.read_cov(.../MI02-sub-TESTsub-TEST/ses-TEST/meg/sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif')
+#noise_cov = mne.read_cov(.../MI02-sub-TESTsub-TEST/ses-TEST/meg/cov/sub-TEST_ses-emptyroom_task-emptyroom_meg-cov.fif')
 ```
 
 **Generating the connectivity circle Plot**
@@ -231,12 +231,12 @@ bem = mne.read_bem_solution(bem_sol_fn)
 fwd = mne.make_forward_solution(raw_fname, trans=trans, src=src, bem=bem, meg=True, eeg=False, mindist=5.0, n_jobs=2)
 print(fwd)
 #Can save these files using the code examples below, but not necessary:
-#mne.write_source_spaces(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-src.fif', src, overwrite=True, verbose=None)
-#mne.write_forward_solution(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-fwd.fif', fwd, overwrite=True, verbose=None)
+#mne.write_source_spaces(.../sub-TEST/ses-TEST/meg/src/sub-TEST_ses-rest_task-rest_meg-src.fif', src, overwrite=True, verbose=None)
+#mne.write_forward_solution(.../sub-TEST/ses-TEST/meg/fwd/sub-TEST_ses-rest_task-rest_meg-fwd.fif', fwd, overwrite=True, verbose=None)
 
 #Read source space and forward solution .fif files
-#scr = mne.read_source_spaces(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-src.fif', patch_stats=False, verbose=None)
-#fwd = mne.read_forward_solution(.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-fwd.fif', include=(), exclude=('bads'),verbose=None)
+#scr = mne.read_source_spaces(.../sub-TEST/ses-TEST/meg/src/sub-TEST_ses-rest_task-rest_meg-src.fif', patch_stats=False, verbose=None)
+#fwd = mne.read_forward_solution(.../sub-TEST/ses-TEST/meg/fwd/sub-TEST_ses-rest_task-rest_meg-fwd.fif', include=(), exclude=('bads'),verbose=None)
 
 snr = 1.0           
 inv_method = 'dSPM' # Can use MNE or sLORETA
@@ -246,9 +246,9 @@ lambda2 = 1.0 / snr ** 2
 # Compute inverse operator
 inverse_operator = make_inverse_operator(epochs.info, fwd, noise_cov, depth=None, fixed=False)
 #Can save the inverse operator using the code examples below:
-#inverse = mne.minimum_norm.write_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif', inverse_operator, overwrite=True, verbose=None)
+#inverse = mne.minimum_norm.write_inverse_operator('.../sub-TEST/ses-TEST/meg/inv/sub-TEST_ses-rest_task-rest_meg-inv.fif', inverse_operator, overwrite=True, verbose=None)
 #Read the /-inv.fif files. 
-#inverse_operator = mne.minimum_norm.read_inverse_operator('.../sub-TEST/ses-TEST/meg/sub-TEST_ses-rest_task-rest_meg-inv.fif')
+#inverse_operator = mne.minimum_norm.read_inverse_operator('.../sub-TEST/ses-TEST/meg/inv/sub-TEST_ses-rest_task-rest_meg-inv.fif')
 
 stcs = apply_inverse_epochs(epochs, inverse_operator, lambda2, inv_method,pick_ori=None, return_generator=True)
 # Get labels for FreeSurfer 'aparc' cortical parcellation with 34 labels per a hemisphere
@@ -341,7 +341,7 @@ The code above produces this connectivity plot.
 ```
 import pandas as pd
 MEG_CONNECTIVITY_arr = con.get_data(output='dense')[:, :, 0] #This gets the data from the connectivity measure (con). 
-pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TEST/meg/meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
+pd.DataFrame(MEG_CONNECTIVITY_arr).to_csv(/fred/oz120/AEDAPT/MI02-sub-TEST/ses-TEST/meg/csv/meg_conn.csv') #This creates a pandas data frame that can be saved as a CSV file. 
 
 ```
  **Saving Anatomical Labels**
